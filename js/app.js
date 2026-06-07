@@ -4,6 +4,7 @@ import { GROUPS, GROUP_MATCHES, KO_STRUCTURE } from './data.js';
 import { loadState, saveState, resetState } from './state.js';
 import { calcAllStandings, isGroupComplete } from './standings.js';
 import { populateSZF, propagateWinners, getWinner } from './bracket.js';
+import { openPrint } from './print.js';
 
 // ── Zustand ───────────────────────────────────────────────────
 let state = loadState();
@@ -341,7 +342,7 @@ document.getElementById('btn-reset')?.addEventListener('click', () => {
   renderBracket();
 });
 
-// ── Export PDF ────────────────────────────────────────────────
+// ── Export / Drucken ─────────────────────────────────────────
 const exportBtn  = document.getElementById('btn-export');
 const exportMenu = document.getElementById('export-menu');
 
@@ -349,73 +350,11 @@ exportBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
   exportMenu.classList.toggle('open');
 });
-
 document.addEventListener('click', () => exportMenu?.classList.remove('open'));
 
-async function exportPDF(allPages) {
-  const opt = {
-    margin:      [8, 8, 8, 8],
-    filename:    'WM2026-Poster.pdf',
-    image:       { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#080f1e' },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'landscape' },
-  };
-
-  exportMenu.classList.remove('open');
-  exportBtn.textContent = '⏳ Wird erstellt...';
-  exportBtn.disabled = true;
-
-  try {
-    if (!allPages) {
-      // Aktuelle Seite
-      const active = document.querySelector('.tab-panel.active');
-      await html2pdf().set(opt).from(active).save();
-    } else {
-      // Alle Seiten: Gruppen + Bracket nacheinander
-      const panels = [
-        document.getElementById('tab-groups'),
-        document.getElementById('tab-bracket'),
-      ];
-      // Zeige alle kurz an für Rendering
-      let pdf = html2pdf().set(opt);
-      for (let i = 0; i < panels.length; i++) {
-        panels[i].style.display = 'block';
-      }
-      // Multi-page: Gruppen als erste Seite, Bracket als zweite
-      const groupsEl  = document.getElementById('tab-groups');
-      const bracketEl = document.getElementById('tab-bracket');
-      const worker = html2pdf().set({...opt, filename:'WM2026-Poster-Alle.pdf'})
-        .from(groupsEl)
-        .toContainer()
-        .toCanvas()
-        .toPdf()
-        .get('pdf')
-        .then(pdfObj => {
-          pdfObj.addPage();
-        })
-        .from(bracketEl)
-        .toContainer()
-        .toCanvas()
-        .toPdf()
-        .save();
-
-      await worker;
-
-      // Nur aktive Tab wieder sichtbar
-      panels.forEach(p => p.style.display = '');
-      document.querySelector('.tab-panel.active').style.display = 'block';
-    }
-  } catch(err) {
-    console.error('PDF Fehler:', err);
-    alert('PDF-Export fehlgeschlagen. Bitte versuche "Aktuelle Seite".');
-  }
-
-  exportBtn.textContent = '⬇ PDF Export';
-  exportBtn.disabled = false;
-}
-
-document.getElementById('exp-current')?.addEventListener('click', () => exportPDF(false));
-document.getElementById('exp-all')?.addEventListener('click',     () => exportPDF(true));
+document.getElementById('exp-groups')?.addEventListener('click',  () => { exportMenu.classList.remove('open'); openPrint(state, 'groups');  });
+document.getElementById('exp-bracket')?.addEventListener('click', () => { exportMenu.classList.remove('open'); openPrint(state, 'bracket'); });
+document.getElementById('exp-all')?.addEventListener('click',     () => { exportMenu.classList.remove('open'); openPrint(state, 'all');     });
 
 // ── Init ──────────────────────────────────────────────────────
 initTabs();
