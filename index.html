@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WM 2026 — Interaktives Tipp-Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════
+       HEADER
+  ═══════════════════════════════════ -->
+  <header class="site-header">
+    <div>
+      <div class="header-title">⚽ WM 2026 TIPP-POSTER</div>
+      <div class="header-sub">USA · Kanada · Mexiko &nbsp;·&nbsp; 11. Juni – 19. Juli 2026</div>
+    </div>
+    <button class="btn-reset" id="btn-reset">↺ Zurücksetzen</button>
+  </header>
+
+  <!-- ═══════════════════════════════════
+       TABS
+  ═══════════════════════════════════ -->
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="tab-groups">Gruppenphase</button>
+    <button class="tab-btn"        data-tab="tab-bracket">Turnierbaum</button>
+    <button class="tab-btn"        data-tab="tab-info">Legende</button>
+  </nav>
+
+  <!-- ═══════════════════════════════════
+       TAB: GRUPPENPHASE
+  ═══════════════════════════════════ -->
+  <div id="tab-groups" class="tab-panel active">
+    <div id="groups-section">
+      <!-- wird von app.js befüllt -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       TAB: TURNIERBAUM
+  ═══════════════════════════════════ -->
+  <div id="tab-bracket" class="tab-panel">
+    <div id="bracket-section">
+      <!-- wird von app.js befüllt -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       TAB: LEGENDE
+  ═══════════════════════════════════ -->
+  <div id="tab-info" class="tab-panel">
+    <div class="info-panel">
+      <h3>So funktioniert das Tipp-Poster</h3>
+      <ul>
+        <li><strong>Gruppenphase:</strong> Trage Ergebnisse in die Felder neben jedem Spiel ein. Die Tabelle aktualisiert sich automatisch.</li>
+        <li><strong>Qualifikation:</strong> Die zwei Erstplatzierten jeder Gruppe sowie die 8 besten Drittplatzierten qualifizieren sich für das Sechzehntelfinale.</li>
+        <li><strong>Turnierbaum:</strong> Sobald alle Spiele einer Gruppe eingetragen sind, werden die Sieger automatisch in den Turnierbaum übernommen. Ab dem Sechzehntelfinale trägst du die Ergebnisse manuell ein.</li>
+        <li><strong>Speichern:</strong> Alle Eingaben werden automatisch im Browser gespeichert und beim nächsten Öffnen wiederhergestellt.</li>
+        <li><strong>Zurücksetzen:</strong> Mit dem Button oben rechts kannst du alle Eingaben löschen.</li>
+      </ul>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot dot-green"></div>
+          <span>Qualifiziert (Platz 1–2)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot dot-yellow"></div>
+          <span>Evtl. qualifiziert (Platz 3)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot dot-gray"></div>
+          <span>Ausgeschieden (Platz 4)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
