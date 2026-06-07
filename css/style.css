@@ -109,8 +109,8 @@ body {
 /* ── Gruppen Grid ──────────────────────────────────────────── */
 #groups-section {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
 }
 
 .group-card {
@@ -370,11 +370,98 @@ body {
 .dot-gray   { background: rgba(90,122,154,0.2); border: 1px solid var(--muted); }
 
 /* ── Responsive ────────────────────────────────────────────── */
-@media (max-width: 1100px) {
-  #groups-section { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 900px) {
+  #groups-section { grid-template-columns: 1fr; }
 }
 @media (max-width: 700px) {
   #groups-section { grid-template-columns: 1fr; }
   .group-body { grid-template-columns: 1fr; }
   .matches-col { border-right: none; border-bottom: 1px solid var(--border); }
+}
+
+/* ── Match Status Farben ───────────────────────────────────── */
+.match-row.live {
+  border-left: 2px solid #e74c3c;
+  background: rgba(231,76,60,0.06);
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { border-left-color: #e74c3c; }
+  50%       { border-left-color: rgba(231,76,60,0.3); }
+}
+
+.match-row.past-missing {
+  background: rgba(46,204,113,0.07);
+  border-left: 2px solid rgba(46,204,113,0.3);
+}
+
+.match-row.past-done {
+  opacity: 0.7;
+}
+
+/* ── Export Button ─────────────────────────────────────────── */
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.export-wrap {
+  position: relative;
+}
+
+.btn-export {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(232,200,74,0.1);
+  border: 1px solid rgba(232,200,74,0.4);
+  color: var(--accent);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-export:hover { background: rgba(232,200,74,0.2); }
+.btn-export:disabled { opacity: 0.5; cursor: wait; }
+
+.export-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 200;
+  min-width: 160px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.export-menu.open { display: block; }
+
+.export-option {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.export-option:hover { background: var(--surface3); color: var(--accent); }
+.export-option + .export-option { border-top: 1px solid var(--border); }
+
+/* ── Print / PDF Styles ────────────────────────────────────── */
+@media print {
+  .site-header, .tabs, .header-actions { display: none !important; }
+  .tab-panel { display: block !important; page-break-after: always; }
+  body { background: #080f1e !important; }
 }

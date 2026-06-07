@@ -16,6 +16,46 @@ function save() {
   saveState(state);
 }
 
+
+// Anstoßzeiten der Gruppenspiele (MESZ) für Farbmarkierung
+const MATCH_TIMES = {
+  A_0:'2026-06-11T21:00', A_1:'2026-06-12T04:00', A_2:'2026-06-18T18:00',
+  A_3:'2026-06-19T03:00', A_4:'2026-06-25T03:00', A_5:'2026-06-25T03:00',
+  B_0:'2026-06-12T21:00', B_1:'2026-06-13T21:00', B_2:'2026-06-18T21:00',
+  B_3:'2026-06-19T00:00', B_4:'2026-06-24T21:00', B_5:'2026-06-24T21:00',
+  C_0:'2026-06-14T00:00', C_1:'2026-06-14T03:00', C_2:'2026-06-20T00:00',
+  C_3:'2026-06-20T03:00', C_4:'2026-06-25T00:00', C_5:'2026-06-25T00:00',
+  D_0:'2026-06-13T03:00', D_1:'2026-06-13T06:00', D_2:'2026-06-19T21:00',
+  D_3:'2026-06-20T06:00', D_4:'2026-06-26T04:00', D_5:'2026-06-26T04:00',
+  E_0:'2026-06-14T19:00', E_1:'2026-06-15T01:00', E_2:'2026-06-20T22:00',
+  E_3:'2026-06-21T02:00', E_4:'2026-06-25T22:00', E_5:'2026-06-25T22:00',
+  F_0:'2026-06-14T22:00', F_1:'2026-06-15T04:00', F_2:'2026-06-20T19:00',
+  F_3:'2026-06-21T06:00', F_4:'2026-06-26T01:00', F_5:'2026-06-26T01:00',
+  G_0:'2026-06-15T21:00', G_1:'2026-06-16T03:00', G_2:'2026-06-22T00:00',
+  G_3:'2026-06-22T03:00', G_4:'2026-06-27T05:00', G_5:'2026-06-27T05:00',
+  H_0:'2026-06-15T18:00', H_1:'2026-06-16T00:00', H_2:'2026-06-21T18:00',
+  H_3:'2026-06-22T00:00', H_4:'2026-06-27T02:00', H_5:'2026-06-27T02:00',
+  I_0:'2026-06-16T21:00', I_1:'2026-06-17T00:00', I_2:'2026-06-22T23:00',
+  I_3:'2026-06-23T02:00', I_4:'2026-06-26T21:00', I_5:'2026-06-26T21:00',
+  J_0:'2026-06-17T03:00', J_1:'2026-06-16T06:00', J_2:'2026-06-22T19:00',
+  J_3:'2026-06-23T05:00', J_4:'2026-06-28T04:00', J_5:'2026-06-28T04:00',
+  K_0:'2026-06-17T19:00', K_1:'2026-06-18T04:00', K_2:'2026-06-23T19:00',
+  K_3:'2026-06-24T04:00', K_4:'2026-06-28T01:30', K_5:'2026-06-28T01:30',
+  L_0:'2026-06-17T22:00', L_1:'2026-06-18T01:00', L_2:'2026-06-23T22:00',
+  L_3:'2026-06-24T01:00', L_4:'2026-06-27T23:00', L_5:'2026-06-27T23:00',
+};
+
+function getMatchStatus(key) {
+  const t = MATCH_TIMES[key];
+  if (!t) return 'future';
+  const now    = new Date();
+  const start  = new Date(t + ':00+02:00'); // MESZ
+  const end    = new Date(start.getTime() + 110 * 60000);
+  if (now >= start && now <= end) return 'live';
+  if (now > end) return 'past';
+  return 'future';
+}
+
 // ── Render Gruppen ────────────────────────────────────────────
 function renderGroups() {
   const allStandings = calcAllStandings(state.groupScores);
@@ -300,6 +340,82 @@ document.getElementById('btn-reset')?.addEventListener('click', () => {
   renderGroups();
   renderBracket();
 });
+
+// ── Export PDF ────────────────────────────────────────────────
+const exportBtn  = document.getElementById('btn-export');
+const exportMenu = document.getElementById('export-menu');
+
+exportBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  exportMenu.classList.toggle('open');
+});
+
+document.addEventListener('click', () => exportMenu?.classList.remove('open'));
+
+async function exportPDF(allPages) {
+  const opt = {
+    margin:      [8, 8, 8, 8],
+    filename:    'WM2026-Poster.pdf',
+    image:       { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#080f1e' },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'landscape' },
+  };
+
+  exportMenu.classList.remove('open');
+  exportBtn.textContent = '⏳ Wird erstellt...';
+  exportBtn.disabled = true;
+
+  try {
+    if (!allPages) {
+      // Aktuelle Seite
+      const active = document.querySelector('.tab-panel.active');
+      await html2pdf().set(opt).from(active).save();
+    } else {
+      // Alle Seiten: Gruppen + Bracket nacheinander
+      const panels = [
+        document.getElementById('tab-groups'),
+        document.getElementById('tab-bracket'),
+      ];
+      // Zeige alle kurz an für Rendering
+      let pdf = html2pdf().set(opt);
+      for (let i = 0; i < panels.length; i++) {
+        panels[i].style.display = 'block';
+      }
+      // Multi-page: Gruppen als erste Seite, Bracket als zweite
+      const groupsEl  = document.getElementById('tab-groups');
+      const bracketEl = document.getElementById('tab-bracket');
+      const worker = html2pdf().set({...opt, filename:'WM2026-Poster-Alle.pdf'})
+        .from(groupsEl)
+        .toContainer()
+        .toCanvas()
+        .toPdf()
+        .get('pdf')
+        .then(pdfObj => {
+          pdfObj.addPage();
+        })
+        .from(bracketEl)
+        .toContainer()
+        .toCanvas()
+        .toPdf()
+        .save();
+
+      await worker;
+
+      // Nur aktive Tab wieder sichtbar
+      panels.forEach(p => p.style.display = '');
+      document.querySelector('.tab-panel.active').style.display = 'block';
+    }
+  } catch(err) {
+    console.error('PDF Fehler:', err);
+    alert('PDF-Export fehlgeschlagen. Bitte versuche "Aktuelle Seite".');
+  }
+
+  exportBtn.textContent = '⬇ PDF Export';
+  exportBtn.disabled = false;
+}
+
+document.getElementById('exp-current')?.addEventListener('click', () => exportPDF(false));
+document.getElementById('exp-all')?.addEventListener('click',     () => exportPDF(true));
 
 // ── Init ──────────────────────────────────────────────────────
 initTabs();
